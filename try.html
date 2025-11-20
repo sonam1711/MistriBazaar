@@ -1,0 +1,1563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MistriBazaar Navigation with Dual Focus & Enhanced Search</title>
+    <style>
+        /* =========================================================
+        * CSS STYLES
+        * =========================================================
+        */
+
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap');
+
+           :root {
+            --primary-color: #2379a7; 
+            --search-focus-color: #003d5e; /* Dark Blue for Search */
+            --highlight-color: #2379a7; /* Teal/Cyan highlight for dynamic text */
+            --background-color: #ffffff;
+            --text-color: #1f2937;
+            --border-color: #e5e7eb; 
+            --shadow-light: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06); 
+            --secondary-bg-color: #e6f4ff; /* Light blue background for contrast section */
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7fbf8;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* --- Header & Container --- */
+        .header {
+            background-color: rgba(61, 187, 255, 0.447);
+            box-shadow: var(--shadow-light);
+            padding: 0.75rem 1rem;
+        }
+
+        .nav-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* --- Left Side Group (Logo & Business/Work Toggles) --- */
+        .left-nav-group {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        *
+
+        /* --- Segmented Control --- */
+        .segmented-control {
+            display: none;
+            display: inline-flex;
+            gap: 1.5rem; /* Increased gap for visual separation */
+            padding: 0; /* Removed padding */
+        }
+
+        .segmented-button {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.1rem;
+            padding: 0; /* Removed padding to eliminate the background box */
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #6b7280;
+            text-decoration: none;
+            transition: all 0.2s;
+            border-radius: 0; /* Removed border radius */
+        }
+
+        .segmented-button:hover {
+            background-color: transparent; /* Removed background fill */
+            color: var(--primary-color); /* Highlight text with primary color */
+        }
+        
+        /* New rule: Highlight inactive icon on hover */
+        .segmented-button:not(.active):hover svg {
+            stroke: var(--primary-color);
+        }
+
+        .segmented-button svg {
+            width: 20px;
+            height: 20px;
+            stroke-width: 2;
+        }
+
+        /* Active State */
+        .segmented-button.active {
+            color: var(--primary-color);
+        }
+        .segmented-button.active svg {
+            stroke: var(--primary-color);
+        }
+
+        .segmented-button:not(.active) svg {
+            stroke: #6b7280;
+        }
+
+        /* --- Right Side Group --- */
+        .utility-group {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        /* --- General Button Styles --- */
+        .pill-button {
+            display: inline-flex; 
+            align-items: center; 
+            padding: 0.5rem 1rem;
+            min-height: 20px;
+            border-radius: 1100px; 
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .btn-signup {
+            border: 2px solid var(--search-focus-color);
+            background-color: transparent;
+            color: var(--search-focus-color);
+        }
+        .btn-signup:hover {
+            background-color: #e9f5ff;
+        }
+
+        .btn-login {
+            border: 2px solid var(--search-focus-color);
+            background-color: var(--search-focus-color);
+            color: rgb(235, 235, 235);
+        }
+        .btn-login:hover {
+            background-color: #067ebf;
+            border-color: #067ebf;
+        }
+
+        .icon-button {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.5rem;
+            color: #4b5563;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: background-color 0.2s, color 0.2s;
+            white-space: nowrap;
+        }
+        .icon-button:hover {
+            background-color: #f3f4f6;
+            color: var(--text-color);
+        }
+
+        /* Language Dropdown Styles (kept original) */
+        .language-wrapper { position: relative; }
+        .language-button { display: flex; align-items: center; padding: 0.5rem 0.75rem; border-radius: 0.5rem; background-color: transparent; border: 1px solid transparent; cursor: pointer; transition: background-color 0.2s, border-color 0.2s; font-family: 'Inter', sans-serif; color: var(--text-color); font-weight: 600; }
+        .language-button:hover { background-color: #f3f4f6; }
+        .language-button-text { margin: 0 0.25rem 0 0.5rem; text-transform: uppercase; font-size: 0.9rem; }
+        .language-dropdown { position: absolute; top: 100%; right: 0; z-index: 10; background-color: var(--background-color); border: 1px solid var(--border-color); border-radius: 0.5rem; box-shadow: var(--shadow-light); min-width: 150px; margin-top: 0.5rem; padding: 0.25rem 0; display: none; }
+        .language-dropdown.active { display: block; }
+        .dropdown-item { display: block; padding: 0.5rem 1rem; text-decoration: none; color: var(--text-color); font-size: 0.9rem; transition: background-color 0.1s; }
+        .dropdown-item:hover { background-color: #f3f4f6; }
+        .dropdown-item.selected { font-weight: 700; background-color: #e0f2f1; }
+
+
+        /* =========================================================
+        * HERO SECTION STYLES (ENHANCED)
+        * =========================================================
+        */
+        .hero-section {
+            padding: 0.5rem 1rem;
+            background-color: var(--background-color);
+        }
+
+        .hero-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 4rem;
+        }
+
+        .hero-content-left {
+            flex: 1;
+            max-width: 600px;
+        }
+
+        .hero-image-right {
+            flex: 1;
+            display: none;
+        }
+
+        .worker-image {
+            position: relative;
+            top: -0.01px;
+            margin-top: 10%;
+            right: -70px;
+            width: 550px;
+            height:auto;
+        }
+        
+
+        /* Search Section */
+        .search-section h1 {
+            font-size: 2.5rem;
+            font-weight: 900; /* Extra bold */
+            color: var(--text-color);
+            margin-bottom: 0.5rem; /* Reduced margin */
+            line-height: 1.2;
+        }
+        
+        .hero-subheader {
+            font-size: 1.1rem;
+            color: #6b7280;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Dynamic Text Highlighting */
+        .text-highlight {
+            color: var(--highlight-color);
+            transition: color 0.5s ease;
+        }
+
+        /* NEW SEARCH INPUT GROUP STYLES */
+        .service-location-input-wrapper {
+            display: flex;
+            flex-direction: column; /* Stacked by default */
+            gap: 0rem;
+            margin-bottom: 2rem;
+            max-width: 400px;
+            margin-left: 3rem;
+        }
+
+        .service-input-group,
+        .location-input-group {
+            display: flex;
+            align-items: center;
+            border: 2px solid var(--search-focus-color);
+            border-radius: 1100px;
+            padding: 0.5rem 1rem;
+            background-color: #ffffff;
+            flex: 1;
+            transition: all 0.3s;
+        }
+
+        .service-input-group:focus-within,
+        .location-input-group:focus-within {
+            box-shadow: 0 0 0 3px rgba(40, 159, 233, 0.5); /* Subtle focus ring */
+            border-color: var(--primary-color);
+        }
+
+
+        .service-input-group svg,
+        .location-input-group svg {
+            color: var(--search-focus-color);
+            margin-right: 0.5rem;
+        }
+
+        .service-input-group input,
+        .location-input-group input {
+            flex-grow: 1;
+            border: none;
+            outline: none;
+            font-size: 1rem;
+            padding: 0.25rem 0;
+        }
+        .service-input-group input::placeholder,
+        .location-input-group input::placeholder {
+            color: #9ca3af;
+        }
+
+        .search-button {
+            background-color: var(--primary-color);
+            color: #ffffff;
+            border: 2px solid var(--primary-color);
+            padding: 0.75rem 1rem;
+            font-size: 1.1rem;
+            font-weight: 800;
+            box-shadow: 0 4px 6px -1px rgba(56, 115, 161, 0.4), 0 2px 4px -1px rgba(56, 161, 105, 0.2);
+            width: 50%; /* Full width on mobile */
+            justify-content: center;
+            margin-left: 2rem;
+        }
+        .search-button:hover {
+            background-color: rgb(34, 138, 195);
+            border-color: rgb(34, 138, 195);
+        }
+        
+        /* New CTA Wrapper for alignment */
+        .project-cta-wrapper {
+            margin-top: 1rem; /* Spacing below the value propositions */
+            text-align: left;
+        }
+
+        
+        
+        /* Primary CTA Button (for Post Project) */
+        .btn-primary-cta {
+            background-color: var(--primary-color);
+            color: #ffffff;
+            border: 2px solid var(--primary-color);
+            padding: 1rem 2rem;
+            font-size: 1rem;
+            font-weight: 800;
+            box-shadow:0 4px 6px -1px rgba(56, 115, 161, 0.4), 0 2px 4px -1px rgba(56, 161, 105, 0.2);
+        }
+        .btn-primary-cta:hover {
+            background-color: rgb(34, 138, 195); /* Darker green on hover */
+            border-color: rgb(34, 138, 195);
+        }
+
+
+        /* --- Responsive Adjustments --- */
+
+        @media (min-width: 601px) {
+            .segmented-control {
+                display: inline-flex;
+            }
+        } 
+
+        @media (min-width: 768px) {
+            .service-location-input-wrapper {
+                /* flex-direction: row;  */
+                gap: 0.5rem; 
+            }
+            .service-input-group,
+            .location-input-group {
+                padding: 0.75rem 1.25rem; 
+            }
+            .search-button {
+                width: 40%;  
+            } 
+        }
+
+        @media (min-width: 900px) {
+            .hero-container {
+                flex-direction: row;
+                padding: 2rem 1rem;
+            }
+            .hero-image-right {
+                display: block; 
+            }
+            .search-section h1 {
+                font-size: 3rem;
+            }
+        } 
+
+        @media (max-width: 899px) {
+            .hero-container {
+                flex-direction: column;
+                text-align: center;
+            }
+            .hero-content-left {
+                max-width: 100%; 
+            }
+            .search-section h1 {
+                font-size: 2rem;
+            }
+            .value-propositions {
+                text-align: center;
+            } 
+            .value-propositions p {
+                justify-content: center;
+            }
+            .service-location-input-wrapper {
+                max-width: 300px;
+                margin-left: auto;
+                margin-right: auto;
+            }
+            .hero-subheader {
+                text-align: center;
+            }
+            .project-cta-wrapper {
+                text-align: center; 
+            }
+        } 
+
+        @media (max-width: 767px) {
+            .icon-button span {
+                display: none;
+            }
+            .icon-button {
+                padding: 0.5rem;
+            }
+        }  
+
+        /* === NEW HORIZONTAL NAV STYLES START === */
+        /* Main Container for the navigation bar */
+        .nav-bar-wrapper {
+            font-family: 'Inter', sans-serif;
+             padding: 1rem 0; 
+             background-color: #ffffff;
+            border-bottom: 1px solid #ffffff;  
+        }
+
+        /* Flex container to center and space the links */
+        .nav-links-container {
+            background-color: #ffffff;
+            display: flex;
+            justify-content: flex-end; /* ALIGNED TO THE RIGHT */
+            align-items: center;
+            max-width: 1280px;
+            margin: 0 auto;
+            gap: 1.5rem; /* Space between links */
+            padding: 0 1rem;
+            flex-wrap: wrap; /* Allows links to wrap on small screens */
+        }
+
+        /* Styling for the individual links */
+        .nav-link {
+            background-color: #ffffff;
+            display: inline-block;
+            text-decoration: none;
+            color: #6b7280; /* Light gray color from the image */
+            font-size: 1rem;
+            font-weight: 500;
+            padding: 0.5rem 0.25rem; /* Vertical padding makes the hover target slightly larger */
+            transition: color 0.2s ease, border-bottom 0.2s ease;
+            white-space: nowrap; /* Keep link text on one line */
+        }
+
+        /* Hover effect: darkens the text and adds a subtle primary color underline */
+        .nav-link:hover {
+            color: var(--text-color); 
+            
+        } 
+
+        /* Active/Current Link State (optional, but good practice) */
+        /* .nav-link.active {
+            color: var(--text-color); 
+            font-weight: 600;
+            border-bottom: 2px solid var(--primary-color);
+        } */
+
+        /* Mobile adjustment: ensure wrapping if screen is too narrow */
+        @media (max-width: 640px) {
+            .nav-links-container {
+                gap: 1rem; /* Reduce gap on mobile */
+                justify-content: space-around; /* Distribute links more evenly */
+            }
+            .nav-link {
+                font-size: 0.9rem;
+                padding: 0.5rem 0.1rem;
+            }
+        }
+        /* === NEW HORIZONTAL NAV STYLES END === */
+            .content-section {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 3rem 1rem;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--text-color);
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        /* New Section Style for Pain Point CTA (Two Columns) */
+        .pain-point-cta-section {
+            background-color: var(--secondary-bg-color); /* Use light blue for visual appeal */
+            padding: 3rem 1rem;
+            text-align: center;
+            margin-bottom: 2rem; 
+            border-bottom: 3px solid var(--primary-color);
+        }
+
+        .pain-point-content {
+            max-width: 900px; 
+            margin: 0 auto;
+            text-align: center;
+        }
+        
+        /* New style for 2-column text wrapper */
+        .pain-point-text-wrapper {
+            display: flex;
+            gap: 2rem;
+            margin-bottom: 1.5rem;
+            text-align: left; 
+        }
+        /* Mobile: stack the columns */
+        @media (max-width: 768px) {
+            .pain-point-text-wrapper {
+                flex-direction: column;
+                gap: 1.5rem; /* Increased gap for stacked content */
+                text-align: center;
+            }
+        }
+
+        .pain-point-title {
+            font-size: 2rem;
+            font-weight: 900;
+            color: var(--search-focus-color);
+            margin-bottom: 0.75rem;
+        }
+
+        /* New List Styling for Pain Point Solutions */
+        .pain-point-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .pain-point-list li {
+            font-size: 1.15rem;
+            color: var(--search-focus-color); 
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            position: relative;
+            padding-left: 1.5rem;
+        }
+        .pain-point-list li::before {
+            content: '→'; /* Simple bullet point */
+            color: var(--primary-color);
+            font-weight: 900;
+            position: absolute;
+            left: 0;
+        }
+
+        /* Service Grid Styles */
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .service-card {
+            background-color: var(--background-color);
+            border-radius: 0.75rem;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.08); /* Stronger shadow */
+            padding: 1.5rem;
+            text-align: center;
+            text-decoration: none;
+            color: var(--text-color);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .service-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 25px rgba(0, 0, 0, 0.15); /* More lift on hover */
+        }
+
+        .service-icon {
+            font-size: 2rem;
+            color: var(--primary-color);
+            margin-bottom: 0.75rem;
+        }
+
+        .service-card-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin: 0;
+        }
+        
+        /* New Plans Section Styles */
+        .plans-section {
+            padding: 4rem 1rem;
+            background-color: var(--background-color); 
+            margin-bottom: 2rem;
+        }
+        .plans-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: row; 
+            align-items: center;
+            gap: 4rem;
+        }
+        .plans-content {
+            flex: 1;
+            max-width: 50%;
+            text-align: left;
+        }
+        .plans-title {
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: var(--text-color);
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+        .plans-subtitle {
+            font-size: 1.15rem;
+            color: #4b5563;
+            margin-bottom: 2rem;
+        }
+        .plans-list {
+            list-style: none;
+            padding: 0;
+            margin-bottom: 2rem;
+        }
+        .plans-list li {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--search-focus-color);
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: flex-start;
+        }
+        .plans-list li span {
+            color: var(--primary-color);
+            margin-right: 0.75rem;
+            font-size: 1.5rem;
+            line-height: 1;
+        }
+        .plans-image-wrapper {
+            flex: 1;
+            display: flex;
+            justify-content: flex-end; 
+            max-width: 50%;
+        }
+        .plans-image-wrapper img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Mobile adjustments for Plans section */
+        @media (max-width: 900px) {
+            .plans-container {
+                flex-direction: column;
+                gap: 2rem;
+                text-align: center;
+            }
+            .plans-content,
+            .plans-image-wrapper {
+                max-width: 100%;
+            }
+            .plans-list {
+                text-align: left; 
+                margin-left: auto;
+                margin-right: auto;
+                max-width: 400px;
+            }
+        }
+
+        /* New Section Style for Supplier CTA (Lifted Card) */
+        .supplier-cta-section {
+            background-color: var(--secondary-bg-color); /* Light blue background for visual separation */
+            padding: 5rem 1rem; 
+            text-align: center;
+        }
+        .supplier-cta-content {
+            max-width: 900px;
+            margin: 0 auto;
+            color: var(--search-focus-color);
+            
+            /* Styles to make it look like a lifted card */
+            padding: 2.5rem;
+            background-color: var(--background-color); 
+            border-radius: 1rem;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1); 
+            position: relative;
+            top: 0;
+            transition: all 0.3s;
+        }
+        .supplier-cta-content:hover {
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .supplier-cta-title {
+            font-size: 2.5rem;
+            font-weight: 900;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+        .supplier-cta-description {
+            font-size: 1.15rem;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+            color: #4b5563;
+        }
+        .supplier-product-list {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 2.5rem;
+        }
+        
+        /* New Section Style for About Us */
+        .about-section {
+            background-color: var(--secondary-bg-color); 
+            padding: 4rem 1rem;
+            text-align: center;
+            border-top: 1px solid var(--border-color);
+        }
+        .about-content {
+            max-width: 900px;
+            margin: 0 auto;
+            color: var(--search-focus-color);
+        }
+        .about-content p {
+            font-size: 1.15rem;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+            font-weight: 500;
+        }
+        
+        /* New Section Style for Workers CTA (Gradient Background) */
+        .worker-cta-section {
+            background: linear-gradient(135deg, var(--search-focus-color) 0%, #005f93 100%); /* Subtle dark blue gradient */
+            color: #ffffff;
+            padding: 5rem 1rem; 
+            text-align: center;
+        }
+
+        .worker-cta-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .worker-cta-title {
+            font-size: 2.5rem;
+            font-weight: 900;
+            margin-bottom: 0.5rem;
+            line-height: 1.2;
+        }
+
+        .worker-cta-subtitle {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+
+        .worker-cta-emotion {
+            font-size: 1rem;
+            font-weight: 400;
+            color: #e5e7eb; 
+            margin-bottom: 2rem;
+            padding: 0 1rem;
+        }
+
+        .btn-work-cta {
+            background-color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+            color: white;
+            padding: 1rem 2.5rem;
+            font-size: 1.1rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.3);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-work-cta:hover {
+            background-color: rgb(34, 138, 195);
+            border-color: rgb(34, 138, 195);
+            transform: scale(1.05); /* Pop button on hover */
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .nav-links-container {
+            margin-left: 60%;
+        }
+
+
+
+    </style>
+</head>
+<body>
+
+    <header class="header">
+        <div class="nav-container">
+
+            <div class="left-nav-group">
+                <!-- Logo -->
+                <a href="#" class="logo"><img src="logo.png" alt="MistriBazaar Logo" class="logo-img" height="50px" width=auto></a>
+
+                <!-- Business/Work Nav Links (NOW STANDALONE ICONS) -->
+                <nav class="segmented-control">
+                    <!-- 'Business' for consumers (Home/Projects) -->
+                    <a href="#" class="segmented-button">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 4V3c0-1.7-1.3-3-3-3H8C6.3 0 5 1.3 5 3v1H0v4c0 1.7 1.3 3 3 3h14c1.7 0 3-1.3 3-3V4h-5ZM7 3c0-.6.4-1 1-1h4c.6 0 1 .4 1 1v1H7V3Zm10 9c1.2 0 2.3-.5 3-1.4V15c0 1.7-1.3 3-3 3H3c-1.7 0-3-1.3-3-3v-4.4c.7.9 1.8 1.4 3 1.4h14Z" />
+                        </svg>
+                        <span>Business</span>
+                    </a> 
+                    <!-- 'Work' for laborers (Job Hub) -->
+                    <a href="#" class="segmented-button">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M22 15c0 .66-.3 1.28-.84 1.7L19 19.86l-1.42 1.42c-.54.54-1.16.82-1.8.82s-1.26-.28-1.8-.82l-3.32-3.32c-.54-.54-.82-1.16-.82-1.8s.28-1.26.82-1.8l1.42-1.42L12.8 12 11.4 13.4l-1.4-1.4 1.4-1.4-1.4-1.4-1.4 1.4L6 7.6 1.4 3 3 1.4l5.4 5.6 1.4-1.4 1.4 1.4 1.4-1.4-1.4-1.4 1.4-1.4L18.7 10.3c.54.54.84 1.16.84 1.8s-.3 1.28-.84 1.8L16.2 16.2c.54.54 1.16.82 1.8.82s1.26-.28 1.8-.82l3.32-3.32c.54-.54.82-1.16.82-1.8z"/>
+                        </svg>
+                        <span>Work</span>
+                    </a>
+                </nav>
+            </div>
+
+            <!-- Utility and Auth Group (Right Side) -->
+            <div class="utility-group">
+                
+                <!-- Help Button -->
+                <a href="#" class="icon-button">
+                    <!-- <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.11-1.054 2.148-1.574 3.232-1.574 1.084 0 2.122.52 3.232 1.574m-8.125 0c-1.11 1.054-1.575 2.148-1.575 3.232 0 1.084.52 2.122 1.574 3.232m8.125-6.464c1.11 1.054 1.574 2.148 1.574 3.232 0 1.084-.52 2.122-1.574 3.232m-8.125 0c-1.11 1.054-1.575 2.148-1.575 3.232 0 1.084.52 2.122 1.574 3.232m-8.125-6.464l-.32-.204a1.868 1.868 0 010-3.176l.32-.204m8.125 6.464l-.32-.204a1.868 1.868 0 010-3.176l.32-.204m-8.125 0l-.32-.204a1.868 1.868 0 010-3.176l.32-.204m8.125 0l-.32-.204a1.868 1.868 0 010-3.176l.32-.204"/>
+                    </svg> -->
+                    <span>Help</span>
+                </a>
+
+                <!-- Language Change -->
+                <div class="language-wrapper" id="languageWrapper">
+                    <button class="language-button" id="languageButton">
+                        <!-- Earth Icon -->
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 20px; height: 20px; color: #4b5563;">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 1C5.9 1 1 5.9 1 12s4.9 11 11 11 11-4.9 11-11S18.1 1 12 1Zm8 11c0 .7-.1 1.4-.3 2-.6-1.5-1.6-3.1-3-4.7l1.8-1.8c1 1.3 1.5 2.8 1.5 4.5ZM6.5 6.5c1.3 0 3.6.8 6 2.9l-3.2 3.2C7.1 9.8 6.5 7.5 6.5 6.5Zm8.1 5c2.3 2.7 2.9 5 2.9 6-1.3 0-3.6-.8-6-2.9l3.1-3.1Zm1.9-6.1-1.9 1.9c-1.6-1.4-3.2-2.4-4.7-3 .7-.2 1.3-.3 2-.3 1.8 0 3.3.5 4.6 1.4ZM4 12c0-.7.1-1.4.3-2 .6 1.5 1.6 3.1 3 4.7l-1.8 1.8C4.5 15.2 4 13.7 4 12Zm3.5 6.6 1.9-1.9c1.6 1.4 3.2 2.4 4.7 3-.7.2-1.3.3-2 .3-1.8 0-3.3-.5-4.6-1.4Z"  />
+                        </svg>
+                        <span class="language-button-text" id="activeLanguageText">EN</span>
+                        <!-- Down Arrow -->
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 16px; height: 16px;">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                        </svg>
+                    </button>
+                    
+                    <div class="language-dropdown" id="languageDropdown">
+                        <!-- Dropdown items will be populated by JavaScript -->
+                    </div>
+                </div>
+                
+
+                <!-- Login Button -->
+                <a href="#" class="pill-button btn-login">
+                    Log In
+                </a>
+
+                <!-- Sign Up Button -->
+                <a href="#" class="pill-button btn-signup">
+                    Sign Up
+                </a>
+            </div>
+
+        </div>
+    </header>
+
+
+    <!-- START: Horizontal Text Navigation (Requested Component) -->
+    <div class="nav-bar-wrapper">
+        <nav class="nav-links-container">
+            <a href="#" class="nav-link">Nearby service</a>
+            <a href="#" class="nav-link">Local workers</a>
+            <a href="#" class="nav-link">Hire instantly</a>
+            <a href="#" class="nav-link">Construction</a>
+            
+        </nav>
+    </div>
+    <!-- END: Horizontal Text Navigation -->
+
+    </div>
+
+    
+
+    <!-- HERO SECTION START: Dual column with enhanced search focus -->
+    <main class="hero-section">
+        <div class="nav-container hero-container">
+            <!-- Left Column: Text Content and Forms -->
+            <div class="hero-content-left">
+                <!-- Top Section: Service Search -->
+                <div class="search-section">
+                    <!-- Dynamic H1: This grabs attention immediately -->
+                    <h1>
+                        Find a perfect <span id="dynamic-service-text" class="text-highlight">Plumber</span> 
+                        for your <span class="text-highlight">Home</span> and <span class="text-highlight">Projects</span>.
+                    </h1>
+                    <!-- Pick-up line as a descriptive subheader -->
+                    <p class="hero-subheader">Get service from your locality for your perfect house.</p>
+                    
+                    <div class="service-location-input-wrapper">
+                        <!-- Service Input  -->
+                        <div class="service-input-group">
+                            <!-- Tool/Wrench Icon  -->
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 24px; height: 24px;">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6.75v.75m-4.5 0v.75m-4.5-.75v.75m14.25-1.5c0-.414-.336-.75-.75-.75h-16.5a.75.75 0 00-.75.75v12c0 .414.336.75.75.75h16.5a.75.75 0 00.75-.75v-12z" />
+                            </svg>
+                            <input type="text" placeholder="e.g., Plumber, Electrician, Carpenter" class="service-input" />
+                        </div>
+                        <br>
+                    
+
+                        <!-- Location Input  -->
+                        <div class="location-input-group">
+                            <!-- Location Pin Icon  -->
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 24px; height: 24px;">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+                            </svg>
+                            
+                            <input type="text" placeholder="Enter Location (City/Pincode)" />
+                        </div>
+                        
+                        <div class="project-cta-wrapper">
+                            <button class="search-button pill-button" >Search</button>
+                            <a href="#" class="pill-button btn-primary-cta">
+                                Post a Project
+                            </a>
+                        </div>      
+                    </div>
+                </div> 
+
+                
+            </div>
+
+            <!-- Right Column: Image Placeholder (with enhanced visual style) -->
+            <div class="hero-image-right">
+                <div class="worker-image">
+                    <img src="imagemistri.png" alt="MistriBazaar" height=auto width="550px" >
+                </div>
+            </div>
+        </div>
+    </main>
+    <!-- HERO SECTION END -->
+
+
+        <section class="pain-point-cta-section">
+        <div class="pain-point-content">
+            
+            <!-- Two Columns for specialized content: Left is the bold title, Right is the list -->
+            <div class="pain-point-text-wrapper" style="align-items: flex-start;">
+                
+                <!-- Column 1: Bold Title/Pain Point -->
+                <div style="flex: 1; text-align: left; padding-right: 1rem;">
+                    <!-- NOTE: H2 is inside the column for layout purposes -->
+                    <h2 id="painPointTitle" class="pain-point-title" style="margin-top: 0; margin-bottom: 0;"></h2> 
+                </div>
+
+                <!-- Column 2: Solutions/Benefits List -->
+                <div style="flex: 1; text-align: left; padding-left: 1rem;">
+                    <ul id="painPointList" class="pain-point-list">
+                        <!-- List items populated by JS -->
+                    </ul>
+                </div>
+            </div>
+            <!-- End Two Columns -->
+
+            <a href="#" class="pill-button btn-primary-cta" id="btnPostProjectCta">
+                Post Your Project & Get Quotes Now
+            </a>
+        </div>
+    </section>
+    <!-- END: PAIN POINT CTA SECTION -->
+
+    <!-- Section 1: Popular Services Grid -->
+    <section class="content-section">
+        <h2 class="section-title" id="servicesTitle">Explore Our Popular Services</h2>
+        <div class="services-grid">
+            
+            <a href="#" class="service-card">
+                <span class="service-icon">💡</span>
+                <p class="service-card-title" id="cardElectrician">Electrician</p>
+            </a>
+            <a href="#" class="service-card">
+                <span class="service-icon">💧</span>
+                <p class="service-card-title" id="cardPlumber">Plumber</p>
+            </a>
+            <a href="#" class="service-card">
+                <span class="service-icon">🔨</span>
+                <p class="service-card-title" id="cardCarpenter">Carpenter</p>
+            </a>
+            <a href="#" class="service-card">
+                <span class="service-icon">🎨</span>
+                <p class="service-card-title" id="cardPainter">Painter</p>
+            </a>
+            <a href="#" class="service-card">
+                <span class="service-icon">🧊</span>
+                <p class="service-card-title" id="cardACRepair">AC Repair</p>
+            </a>
+            <a href="#" class="service-card">
+                <span class="service-icon">🏡</span>
+                <p class="service-card-title" id="cardCleaning">Cleaning</p>
+            </a>
+            <a href="#" class="service-card">
+                <span class="service-icon">🧱</span>
+                <p class="service-card-title" id="cardMasonry">Masonry</p>
+            </a>
+            <a href="#" class="service-card">
+                <span class="service-icon">💻</span>
+                <p class="service-card-title" id="cardITTech">IT Technician</p>
+            </a>
+        </div>
+        <div style="text-align: center; margin-top: 1rem;">
+             <a href="#" class="pill-button btn-login" style="background-color: transparent; color: var(--search-focus-color); border: 2px solid var(--search-focus-color);" id="btnViewAll">
+                View All Categories
+             </a>
+        </div>
+    </section>
+
+    <!-- START: EXPLORE PLANS SECTION (Sapno Ka Ghar) -->
+    <section class="plans-section">
+        <div class="plans-container">
+            <!-- Left Column: Content -->
+            <div class="plans-content">
+                <h2 class="plans-title" id="plansTitle">Explore Plans: Build Your <span class="text-highlight">Sapno Ka Ghar</span> (Dream Home) With Us</h2>
+                <p class="plans-subtitle" id="plansSubtitle">
+                    Beyond repairs, we offer comprehensive project management and verified teams for new construction, full renovations, and commercial fit-outs.
+                </p>
+                <ul class="plans-list">
+                    <li id="plansLi1"><span>✅</span> Verified Teams, Not Just Individuals</li>
+                    <li id="plansLi2"><span>✅</span> Clear Milestones and Timelines</li>
+                    <li id="plansLi3"><span>✅</span> Quality Assurance & Guarantee</li>
+                    <li id="plansLi4"><span>✅</span> Dedicated Project Manager Support</li>
+                </ul>
+                <a href="#" class="pill-button btn-primary-cta" id="btnViewPackages">
+                    View Project Packages
+                </a>
+            </div>
+            <!-- Right Column: Image -->
+            <div class="plans-image-wrapper">
+                <!-- Placeholder for an aspirational construction/home image -->
+                <img src="https://placehold.co/550x350/2379a7/ffffff?text=Your+Dream+Home+Project" alt="Conceptual image of a construction project or dream home blueprint." id="plansImage" />
+            </div>
+        </div>
+    </section>
+    <!-- END: EXPLORE PLANS SECTION -->
+
+    <!-- START: SUPPLIER CTA SECTION (Lifted Card) -->
+    <section class="supplier-cta-section">
+        <div class="supplier-cta-content">
+            <h2 class="supplier-cta-title" id="supplierTitle">
+                <span style="color: var(--primary-color);">📈 Grow Your Business:</span> The Digital Marketplace for Construction Materials
+            </h2>
+            <p class="supplier-cta-description" id="supplierDesc">
+                List your shop and let customers compare prices for the products they need most—like <strong>kitchen sinks, tiles, paint, and toilet seats</strong>—all in one place.
+            </p>
+            <p class="supplier-product-list" id="supplierListPain">
+                No need for customers to rush from shop to shop; bring your prices to them!
+            </p>
+            <a href="#" class="pill-button btn-primary-cta" id="btnListShop">
+                List Your Shop & Products
+            </a>
+        </div>
+    </section>
+    <!-- END: SUPPLIER CTA SECTION -->
+
+    <!-- =============================================
+         START: ABOUT US SECTION (Our Mission) 
+         ============================================= -->
+    <section class="about-section">
+        <div class="about-content">
+            <h2 class="section-title" style="color: var(--search-focus-color);" id="aboutTitle">Our Mission at MistriBazaar</h2>
+            <p id="aboutP1">
+                MistriBazaar was founded on the simple idea of connecting local communities with skilled, verified service professionals easily and efficiently. We eliminate the stress of finding reliable help, whether you need a quick repair or a major home project managed.
+            </p>
+            <p id="aboutP2">
+                We believe in <strong>transparency, quality, and community</strong>. By utilizing technology, we not only provide homeowners with instant access to the best laborers but also ensure fair pricing and steady work for our service providers. Our goal is to empower local talent and streamline home services for everyone.
+            </p>
+        </div>
+    </section>
+    <!-- END: ABOUT US SECTION -->
+
+    <!-- START: WORK WITH US CTA SECTION (Gradient Background) -->
+    <section class="worker-cta-section">
+        <div class="worker-cta-content">
+            <h2 class="worker-cta-title" id="workerTitle">Work With Us: Secure Your Daily Income</h2>
+            <p class="worker-cta-subtitle" id="workerSubtitle">
+                <strong>Don't waste time</strong> standing in long queues for a day's wage. Find verified jobs near you, instantly!
+            </p>
+            <p class="worker-cta-emotion" id="workerEmotion">
+                By organizing the labor market, we empower our fellow skilled workers and <strong>help uplift countless families</strong> from daily uncertainty.
+            </p>
+            <a href="#" class="pill-button btn-work-cta" id="btnJoinProvider">
+                Join MistriBazaar as a Service Provider
+            </a>
+        </div>
+    </section>
+    <!-- END: WORK WITH US CTA SECTION -->
+
+    <!-- =============================================
+         END: SCROLLABLE CONTENT SECTIONS 
+         ============================================= -->
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const languageButton = document.getElementById('languageButton');
+            const languageDropdown = document.getElementById('languageDropdown');
+            const activeLanguageText = document.getElementById('activeLanguageText');
+            let dynamicServiceText = document.getElementById('dynamic-service-text');
+            
+            const languages = [
+                { code: 'EN', name: 'English (US)' },
+                { code: 'HI', name: 'Hindi' },
+            ];
+
+            // Configuration for rotation timing
+            const ROTATION_INTERVAL = 3000; // 3 seconds interval
+            const FADE_DURATION = 400; // 0.4 seconds fade time
+
+            // Separate services object to handle translation of the rotating text
+            const services = {
+                'EN': ['Plumber', 'Electrician', 'Carpenter', 'Painter', 'AC Repair'],
+                'HI': ['प्लम्बर', 'इलेक्ट्रीशियन', 'बढ़ई', 'पेंटर', 'एसी मरम्मत']
+            };
+            
+            // Translations object containing all translatable strings
+            const translations = {
+                'EN': {
+                    // Page Title
+                    'page_title': 'MistriBazaar | Find Verified Home Services & Construction Labor',
+                    // Navigation
+                    'nav_business': 'Business',
+                    'nav_work': 'Work',
+                    'nav_help': 'Help',
+                    'nav_login': 'Log In',
+                    'nav_signup': 'Sign Up',
+                    'nav_nearby_service': 'Nearby service',
+                    'nav_local_workers': 'Local workers',
+                    'nav_hire_instantly': 'Hire instantly',
+                    'nav_construction': 'Construction',
+                    // Hero Section H1 parts for proper sentence structure
+                    'hero_h1_start': 'Find a perfect ', 
+                    'hero_h1_mid': ' for your ', 
+                    'hero_h1_end': ' and {Projects}.', 
+                    'hero_h1_home': 'Home',
+                    'hero_h1_projects': 'Projects',
+                    // Hero Section
+                    'hero_subheader': 'Get service from your locality for your perfect house.',
+                    'input_service_placeholder': 'e.g., Plumber, Electrician, Carpenter',
+                    'input_location_placeholder': 'Enter Location (City/Pincode)',
+                    'btn_search': 'Search',
+                    'btn_post_project': 'Post a Project',
+                    // Pain Point CTA
+                    'pain_point_title': 'Tired of finding a perfect Plumber, Electrician, or Carpenter?',
+                    // New List Content
+                    'pain_point_list_li1': 'Stop wasting time',
+                    'pain_point_list_li2': 'Get verified locals at your service',
+                    'pain_point_list_li3': 'Compare prices from local workers',
+                    'btn_post_project_cta': 'Post Your Project & Get Quotes Now',
+                    // Services Grid
+                    'services_title': 'Explore Our Popular Services',
+                    'service_electrician': 'Electrician',
+                    'service_plumber': 'Plumber',
+                    'service_carpenter': 'Carpenter',
+                    'service_painter': 'Painter',
+                    'service_ac_repair': 'AC Repair',
+                    'service_cleaning': 'Cleaning',
+                    'service_masonry': 'Masonry',
+                    'service_it_tech': 'IT Technician',
+                    'btn_view_all': 'View All Categories',
+                    // Explore Plans
+                    'plans_title_start': 'Explore Plans: Build Your ',
+                    'plans_title_end': ' (Dream Home) With Us',
+                    'plans_title_highlight': 'Sapno Ka Ghar',
+                    'plans_subtitle': 'Beyond repairs, we offer comprehensive project management and verified teams for new construction, full renovations, and commercial fit-outs.',
+                    'plans_li1': 'Verified Teams, Not Just Individuals',
+                    'plans_li2': 'Clear Milestones and Timelines',
+                    'plans_li3': 'Quality Assurance & Guarantee',
+                    'plans_li4': 'Dedicated Project Manager Support',
+                    'btn_view_packages': 'View Project Packages',
+                    // Supplier CTA
+                    'supplier_title_start': '📈 Grow Your Business:',
+                    'supplier_title_end': ' The Digital Marketplace for Construction Materials',
+                    'supplier_desc': 'List your shop and let customers compare prices for the products they need most—like <strong>kitchen sinks, tiles, paint, and toilet seats</strong>—all in one place.',
+                    'supplier_list_pain': 'No need for customers to rush from shop to shop; bring your prices to them!',
+                    'btn_list_shop': 'List Your Shop & Products',
+                    // About Us
+                    'about_title': 'Our Mission at MistriBazaar',
+                    'about_p1': 'MistriBazaar was founded on the simple idea of connecting local communities with skilled, verified service professionals easily and efficiently. We eliminate the stress of finding reliable help, whether you need a quick repair or a major home project managed.',
+                    'about_p2': 'We believe in <strong>transparency, quality, and community</strong>. By utilizing technology, we not only provide homeowners with instant access to the best laborers but also ensure fair pricing and steady work for our service providers. Our goal is to empower local talent and streamline home services for everyone.',
+                    // Worker CTA
+                    'worker_title': 'Work With Us: Secure Your Daily Income',
+                    'worker_subtitle': '<strong>Don\'t waste time</strong> standing in long queues for a day\'s wage. Find verified jobs near you, instantly!',
+                    'worker_emotion': 'By organizing the labor market, we empower our fellow skilled workers and <strong>help uplift countless families</strong> from daily uncertainty.',
+                    'btn_join_provider': 'Join MistriBazaar as a Service Provider',
+                },
+                'HI': {
+                    // Page Title
+                    'page_title': 'मिस्त्रीबाज़ार | सत्यापित गृह सेवाएँ और निर्माण श्रमिक खोजें',
+                    // Navigation
+                    'nav_business': 'व्यापार',
+                    'nav_work': 'कार्य',
+                    'nav_help': 'सहायता',
+                    'nav_login': 'लॉग इन करें',
+                    'nav_signup': 'साइन अप करें',
+                    'nav_nearby_service': 'आस-पास की सेवा',
+                    'nav_local_workers': 'स्थानीय श्रमिक',
+                    'nav_hire_instantly': 'तुरंत किराए पर लें',
+                    'nav_construction': 'निर्माण',
+                    // Hero Section H1 parts (reordered for Hindi grammar)
+                    'hero_h1_start': 'आपके ', 
+                    'hero_h1_mid': ' और ', 
+                    'hero_h1_end': ' के लिए एक परफेक्ट ', 
+                    'hero_h1_end_suffix': ' खोजें।',
+                    'hero_h1_home': 'घर',
+                    'hero_h1_projects': 'प्रोजेक्ट्स',
+                    // Hero Section
+                    'hero_subheader': 'अपने परफेक्ट घर के लिए अपनी स्थानीयता से सेवा प्राप्त करें।',
+                    'input_service_placeholder': 'उदाहरण: प्लम्बर, इलेक्ट्रीशियन, बढ़ई',
+                    'input_location_placeholder': 'स्थान दर्ज करें (शहर/पिनकोड)',
+                    'btn_search': 'खोजें',
+                    'btn_post_project': 'एक प्रोजेक्ट पोस्ट करें',
+                    // Pain Point CTA
+                    'pain_point_title': 'परफेक्ट प्लम्बर, इलेक्ट्रीशियन या बढ़ई ढूंढते-ढूंढते थक गए?',
+                    // New List Content
+                    'pain_point_list_li1': 'समय बर्बाद करना बंद करें',
+                    'pain_point_list_li2': 'अपनी सेवा के लिए सत्यापित स्थानीय प्राप्त करें',
+                    'pain_point_list_li3': 'अपने स्थानीय श्रमिकों से कीमतों की तुलना करें',
+                    'btn_post_project_cta': 'अभी अपना प्रोजेक्ट पोस्ट करें और कोटेशन प्राप्त करें',
+                    // Services Grid
+                    'services_title': 'हमारी लोकप्रिय सेवाओं का अन्वेषण करें',
+                    'service_electrician': 'इलेक्ट्रीशियन',
+                    'service_plumber': 'प्लम्बर',
+                    'service_carpenter': 'बढ़ई',
+                    'service_painter': 'पेंटर',
+                    'service_ac_repair': 'एसी मरम्मत',
+                    'service_cleaning': 'सफाई',
+                    'service_masonry': 'राजमिस्त्री',
+                    'service_it_tech': 'आईटी तकनीशियन',
+                    'btn_view_all': 'सभी श्रेणियां देखें',
+                    // Explore Plans
+                    'plans_title_start': 'योजनाएं खोजें: ',
+                    'plans_title_end': ' (सपनों का घर) हमारे साथ बनाएँ',
+                    'plans_title_highlight': 'सपनों का घर',
+                    'plans_subtitle': 'मरम्मत से परे, हम नए निर्माण, पूर्ण नवीनीकरण और वाणिज्यिक फिट-आउट के लिए व्यापक परियोजना प्रबंधन और सत्यापित टीमें प्रदान करते हैं।',
+                    'plans_li1': 'सत्यापित टीमें, केवल व्यक्ति नहीं',
+                    'plans_li2': 'स्पष्ट मील के पत्थर और समयसीमा',
+                    'plans_li3': 'गुणवत्ता आश्वासन और गारंटी',
+                    'plans_li4': 'समर्पित परियोजना प्रबंधक सहायता',
+                    'btn_view_packages': 'परियोजना पैकेज देखें',
+                    // Supplier CTA
+                    'supplier_title_start': '📈 अपना व्यवसाय बढ़ाएँ:',
+                    'supplier_title_end': ' निर्माण सामग्री के लिए डिजिटल मार्केटप्लेस',
+                    'supplier_desc': 'अपनी दुकान को सूचीबद्ध करें और ग्राहकों को उन उत्पादों के लिए कीमतों की तुलना करने दें जिनकी उन्हें सबसे अधिक आवश्यकता है—जैसे <strong>रसोई सिंक, टाइलें, पेंट और शौचालय सीटें</strong>—सब एक ही स्थान पर।',
+                    'supplier_list_pain': 'ग्राहकों को दुकान-दर-दुकान भागने की ज़रूरत नहीं; अपनी कीमतें उन तक पहुंचाएं!',
+                    'btn_list_shop': 'अपनी दुकान और उत्पाद सूचीबद्ध करें',
+                    // About Us
+                    'about_title': 'मिस्त्रीबाज़ार में हमारा मिशन',
+                    'about_p1': 'मिस्त्रीबाज़ार की स्थापना स्थानीय समुदायों को आसानी से और कुशलता से कुशल, सत्यापित सेवा पेशेवरों से जोड़ने के सरल विचार पर की गई थी। हम विश्वसनीय सहायता खोजने के तनाव को समाप्त करते हैं, चाहे आपको त्वरित मरम्मत की आवश्यकता हो या किसी बड़े घर के प्रोजेक्ट का प्रबंधन।',
+                    'about_p2': 'हम <strong>पारदर्शिता, गुणवत्ता और समुदाय</strong> में विश्वास करते हैं। प्रौद्योगिकी का उपयोग करके, हम न केवल घर के मालिकों को सर्वश्रेष्ठ श्रमिकों तक त्वरित पहुंच प्रदान करते हैं, बल्कि हमारे सेवा प्रदाताओं के लिए उचित मूल्य निर्धारण और स्थिर काम भी सुनिश्चित करते हैं। हमारा लक्ष्य स्थानीय प्रतिभा को सशक्त बनाना और सभी के लिए गृह सेवाओं को सुव्यवस्थित करना है।',
+                    // Worker CTA
+                    'worker_title': 'हमारे साथ काम करें: अपनी दैनिक आय सुरक्षित करें',
+                    'worker_subtitle': '<strong>समय बर्बाद न करें</strong> एक दिन की मजदूरी के लिए लंबी कतारों में खड़े रहकर। तुरंत अपने आस-पास सत्यापित नौकरियाँ खोजें!',
+                    'worker_emotion': 'श्रम बाजार को व्यवस्थित करके, हम अपने साथी कुशल श्रमिकों को सशक्त बनाते हैं और <strong>अनगिनत परिवारों को दैनिक अनिश्चितता से बाहर निकालने में मदद करते हैं</strong>।',
+                    'btn_join_provider': 'सेवा प्रदाता के रूप में मिस्त्रीबाज़ार से जुड़ें',
+                }
+            };
+            
+            let serviceIndex = 0;
+            let currentLang = 'EN'; 
+            
+            // Function to update dynamic text content based on current language
+            function getServiceText(langCode) {
+                return services[langCode][serviceIndex];
+            }
+            
+            // Function to handle the rotating service text, now language-aware
+            function startRotation() {
+                // Set up the CSS transition only once
+                if(dynamicServiceText) {
+                    dynamicServiceText.style.transition = `opacity ${FADE_DURATION / 1000}s ease-in-out`;
+                }
+                
+                function rotate() {
+                    if (!dynamicServiceText) return; // Exit if element is somehow missing
+
+                    // 1. Start fade out
+                    dynamicServiceText.style.opacity = 0;
+
+                    // 2. Change content after fade out duration (400ms)
+                    setTimeout(() => {
+                        const langCode = currentLang;
+                        dynamicServiceText.textContent = getServiceText(langCode);
+                        serviceIndex = (serviceIndex + 1) % services[langCode].length;
+                        
+                        // 3. Start fade in
+                        dynamicServiceText.style.opacity = 1;
+
+                        // 4. Schedule next rotation after the full interval (3000ms)
+                        setTimeout(rotate, ROTATION_INTERVAL);
+                    }, FADE_DURATION);
+                }
+                
+                // Start the initial rotation cycle
+                rotate();
+            }
+            
+            // Function to apply translations across the entire page
+            function applyTranslations(code) {
+                const langData = translations[code];
+                if (!langData) return;
+
+                // Helper to update text content safely
+                const updateText = (id, key) => {
+                    const el = document.getElementById(id);
+                    if (el && langData[key]) {
+                        el.textContent = langData[key];
+                    }
+                };
+
+                // Helper to update HTML content safely (for bolding/spans)
+                const updateHTML = (id, key) => {
+                    const el = document.getElementById(id);
+                    if (el && langData[key]) {
+                        el.innerHTML = langData[key];
+                    }
+                };
+
+                // Helper to update input placeholder
+                const updatePlaceholder = (id, key) => {
+                    const el = document.getElementById(id);
+                    if (el && langData[key]) {
+                        el.placeholder = langData[key];
+                    }
+                };
+
+                // Update Page Title
+                document.title = langData.page_title;
+
+                // 1. Navigation & Header
+                updateText('navBusiness', 'nav_business');
+                updateText('navWork', 'nav_work');
+                updateText('navHelp', 'nav_help');
+                updateText('navLogin', 'nav_login');
+                updateText('navSignup', 'nav_signup');
+                updateText('navLinkNearbyService', 'nav_nearby_service');
+                updateText('navLinkLocalWorkers', 'nav_local_workers');
+                updateText('navLinkHireInstantly', 'nav_hire_instantly');
+                updateText('navLinkConstruction', 'nav_construction');
+                
+                // 2. Hero Section H1 (Complex, must handle word order and dynamic span)
+                const serviceText = getServiceText(code);
+                let heroH1HTML;
+
+                if (code === 'EN') {
+                    heroH1HTML = langData.hero_h1_start + `<span id="dynamic-service-text" class="text-highlight">${serviceText}</span>` + 
+                                 langData.hero_h1_mid + `<span class="text-highlight" id="heroH1Home">${langData.hero_h1_home}</span>` + 
+                                 langData.hero_h1_end.replace('{Projects}', langData.hero_h1_projects); // Handle inline text highlight
+                } else { // HI - Different word order
+                    heroH1HTML = langData.hero_h1_start + `<span class="text-highlight" id="heroH1Home">${langData.hero_h1_home}</span>` + 
+                                 langData.hero_h1_mid + `<span class="text-highlight" id="heroH1Projects">${langData.hero_h1_projects}</span>` + 
+                                 langData.hero_h1_end + `<span id="dynamic-service-text" class="text-highlight">${serviceText}</span>` + 
+                                 langData.hero_h1_end_suffix;
+                }
+                
+                document.getElementById('heroH1').innerHTML = heroH1HTML;
+                // Re-link the dynamic span element after innerHTML change
+                dynamicServiceText = document.getElementById('dynamic-service-text');
+                
+                updateText('heroSubheader', 'hero_subheader');
+                updatePlaceholder('inputService', 'input_service_placeholder');
+                updatePlaceholder('inputLocation', 'input_location_placeholder');
+                updateText('btnSearch', 'btn_search');
+                updateText('btnPostProjectHero', 'btn_post_project');
+                
+                // 3. Pain Point CTA
+                updateText('painPointTitle', 'pain_point_title');
+                updateText('btnPostProjectCta', 'btn_post_project_cta');
+
+                const listEl = document.getElementById('painPointList');
+                if (listEl) {
+                    listEl.innerHTML = ''; // Clear existing list
+                    
+                    // Dynamically create and append list items
+                    for (let i = 1; i <= 3; i++) {
+                        const key = 'pain_point_list_li' + i;
+                        const li = document.createElement('li');
+                        li.textContent = langData[key];
+                        listEl.appendChild(li);
+                    }
+                }
+                
+                // 4. Services Grid
+                updateText('servicesTitle', 'services_title');
+                updateText('cardElectrician', 'service_electrician');
+                updateText('cardPlumber', 'service_plumber');
+                updateText('cardCarpenter', 'service_carpenter');
+                updateText('cardPainter', 'service_painter');
+                updateText('cardACRepair', 'service_ac_repair');
+                updateText('cardCleaning', 'service_cleaning');
+                updateText('cardMasonry', 'service_masonry');
+                updateText('cardITTech', 'service_it_tech');
+                updateText('btnViewAll', 'btn_view_all');
+
+                // 5. Explore Plans
+                document.getElementById('plansTitle').innerHTML = langData.plans_title_start + 
+                                                                 `<span class="text-highlight">${langData.plans_title_highlight}</span>` +
+                                                                 langData.plans_title_end;
+                                                                 
+                updateText('plansSubtitle', 'plans_subtitle');
+                updateText('plansLi1', 'plans_li1');
+                updateText('plansLi2', 'plans_li2');
+                updateText('plansLi3', 'plans_li3');
+                updateText('plansLi4', 'plans_li4');
+                updateText('btnViewPackages', 'btn_view_packages');
+                
+                // 6. Supplier CTA
+                document.getElementById('supplierTitle').innerHTML = langData.supplier_title_start + 
+                                                                    `<span style="color: var(--primary-color);">` + langData.supplier_title_end + `</span>`;
+                
+                updateHTML('supplierDesc', 'supplier_desc'); 
+                updateText('supplierListPain', 'supplier_list_pain');
+                updateText('btnListShop', 'btn_list_shop');
+                
+                // 7. About Us
+                updateText('aboutTitle', 'about_title');
+                updateHTML('aboutP1', 'about_p1');
+                updateHTML('aboutP2', 'about_p2');
+                
+                // 8. Worker CTA
+                updateText('workerTitle', 'worker_title');
+                updateHTML('workerSubtitle', 'worker_subtitle');
+                updateHTML('workerEmotion', 'worker_emotion');
+                updateText('btnJoinProvider', 'btn_join_provider');
+            }
+
+            // Function to set the active language
+            function setActiveLanguage(code) {
+                currentLang = code;
+                activeLanguageText.textContent = code;
+                renderDropdown(); // Re-render to update the 'selected' class
+                
+                // Re-initialize dynamic text rotation with new language content
+                serviceIndex = 0; 
+                applyTranslations(code); 
+                console.log(`Language set to: ${code}`);
+            }
+
+
+            // Function to populate and handle dropdown items (unchanged logic)
+            function renderDropdown() {
+                languageDropdown.innerHTML = ''; 
+                languages.forEach(lang => {
+                    const item = document.createElement('a');
+                    item.href = "#"; 
+                    item.classList.add('dropdown-item');
+                    item.textContent = lang.name;
+                    item.setAttribute('data-code', lang.code);
+
+                    if (lang.code === currentLang) {
+                        item.classList.add('selected');
+                    }
+
+                    item.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        setActiveLanguage(lang.code);
+                        languageDropdown.classList.remove('active'); 
+                    });
+
+                    languageDropdown.appendChild(item);
+                });
+            }
+
+            // Toggle dropdown visibility
+            languageButton.addEventListener('click', () => {
+                languageDropdown.classList.toggle('active');
+            });
+
+            // Close dropdown if clicked outside
+            document.addEventListener('click', (e) => {
+                const wrapper = document.getElementById('languageWrapper');
+                if (!wrapper.contains(e.target)) {
+                    languageDropdown.classList.remove('active');
+                }
+            });
+
+            // Initial setup on load
+            renderDropdown();
+            applyTranslations(currentLang); // Apply initial translations
+            startRotation(); // Start the stabilized rotation
+        });
+    </script>
+</body>
+</html>
+
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const languageButton = document.getElementById('languageButton');
+            const languageDropdown = document.getElementById('languageDropdown');
+            const activeLanguageText = document.getElementById('activeLanguageText');
+            const dynamicServiceText = document.getElementById('dynamic-service-text');
+            
+            const languages = [
+                { code: 'EN', name: 'English (US)' },
+                { code: 'HI', name: 'Hindi' },
+            ];
+
+            const services = ['Plumber', 'Electrician', 'Carpenter', 'Painter', 'AC Repair'];
+            let serviceIndex = 0;
+
+            // Function for the rotating heading text
+            function rotateServiceText() {
+                dynamicServiceText.classList.add('fading');
+                setTimeout(() => {
+                    dynamicServiceText.textContent = services[serviceIndex];
+                    dynamicServiceText.classList.remove('fading');
+                    serviceIndex = (serviceIndex + 1) % services.length;
+                }, 400); // Wait for fade out
+            }
+            
+            // Start the rotation
+            dynamicServiceText.style.transition = 'opacity 0.4s ease-in-out';
+            setInterval(() => {
+                dynamicServiceText.style.opacity = 0;
+                setTimeout(() => {
+                    dynamicServiceText.textContent = services[serviceIndex];
+                    serviceIndex = (serviceIndex + 1) % services.length;
+                    dynamicServiceText.style.opacity = 1;
+                }, 400);
+            }, 3000); // Change every 3 seconds
+
+            let activeCode = 'EN';
+
+            // Function to populate and handle dropdown items
+            function renderDropdown() {
+                languageDropdown.innerHTML = ''; // Clear existing content
+
+                languages.forEach(lang => {
+                    const item = document.createElement('a');
+                    item.href = "#"; 
+                    item.classList.add('dropdown-item');
+                    item.textContent = lang.name;
+                    item.setAttribute('data-code', lang.code);
+
+                    if (lang.code === activeCode) {
+                        item.classList.add('selected');
+                    }
+
+                    item.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        setActiveLanguage(lang.code);
+                        languageDropdown.classList.remove('active'); // Close dropdown
+                    });
+
+                    languageDropdown.appendChild(item);
+                });
+            }
+
+            // Function to set the active language
+            function setActiveLanguage(code) {
+                activeCode = code;
+                activeLanguageText.textContent = code;
+                renderDropdown(); // Re-render to update the 'selected' class
+                console.log(`Language set to: ${code}`);
+            }
+
+            // Toggle dropdown visibility
+            languageButton.addEventListener('click', () => {
+                languageDropdown.classList.toggle('active');
+            });
+
+            // Close dropdown if clicked outside
+            document.addEventListener('click', (e) => {
+                const wrapper = document.getElementById('languageWrapper');
+                if (!wrapper.contains(e.target)) {
+                    languageDropdown.classList.remove('active');
+                }
+            });
+
+            // Initial render
+            renderDropdown();
+        });
+    </script>
+</body>
+</html>
